@@ -16,8 +16,10 @@ This server will be a nodejs application using expressjs library. It will have a
 <br>
 <h3>REST API functionalities</h3>
 
+* Create an account with email, password and display name.
+* Change display name
 * Add friend
-* Import friends from facebook
+* Add selected friends from facebook
 * List Friends and their current towns
 * Update current town
 * Set current town update frequency
