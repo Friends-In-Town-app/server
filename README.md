@@ -1,5 +1,5 @@
 # server
-This server will be a nodejs application using expressjs library. It will have a REST API to receive http requests to manage a user's functionalities. It will store data in MongoDB.
+This server will be a nodejs application using expressjs library. It will have a REST API to receive http requests from users clients (app or webpage) in order to use their functionalities. It will store data in MongoDB.
 
 <h3>technology stack:</h3>
 
