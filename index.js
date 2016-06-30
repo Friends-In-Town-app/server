@@ -8,10 +8,19 @@ app.use(express.static('web'));
 
 app.use(function(req, res, next) {
 	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
-	res.header("Access-Control-Allow-Origin", "*");
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+	// res.header("Access-Control-Allow-Origin", "*");
+	// res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	next();
 });
+
+var allowCrossDomain = function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', "*");
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header('Access-Control-Allow-Credentials', true);
+  next();
+};
+app.use(allowCrossDomain);
 
 app.get('/checkemailexistence/:email', function (req, res) {
 	db.existsEmail(req.params.email, function (id) {
