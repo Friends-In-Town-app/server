@@ -57,20 +57,20 @@ app.post('/changename/:token/:displayname', function (req, res) {
 	if (req.params.displayname.length > 0) {
 		getUserIdByToken(res, req.params.token, function (id) {
 			db.changeDisplayName(id, req.params.displayname, function (ok) {
-				if (ok) res.send({msg: "changed display name", success: true})	
-				else res.send({msg: "something bad happened, try again.", success: false})	
+				if (ok) res.jsonp({msg: "changed display name", success: true})	
+				else res.jsonp({msg: "something bad happened, try again.", success: false})	
 			})
 		})
 	} else {
-		res.send({msg: "bad display name", success: false})	
+		res.jsonp({msg: "bad display name", success: false})	
 	}
 	
 });
 
 app.get('/search/:email/', function (req, res) {
 	db.getUserDisplayByEmail(req.params.email, function (user) {
-		if (user !== undefined) res.send({msg: "found user", success: true, user: user})
-		else res.send({msg: "no user found", success: false})
+		if (user !== undefined) res.jsonp({msg: "found user", success: true, user: user})
+		else res.jsonp({msg: "no user found", success: false})
 	})
 });
 
@@ -79,11 +79,11 @@ app.post('/requestfriendship/:token/:id', function (req, res) {
 		db.existsUserId(req.params.id, function (friendId) {
 			if (friendId !== undefined) {
 				db.requestFriendship(id, friendId, function (ok) {
-					if (ok) res.send({msg: "friendship requested", success: true})
-					else res.send({msg: "for some reason we couldn't request friendship", success: false})
+					if (ok) res.jsonp({msg: "friendship requested", success: true})
+					else res.jsonp({msg: "for some reason we couldn't request friendship", success: false})
 				})
 			} else {
-				res.send({msg: "friend doesn't exist", success: false})
+				res.jsonp({msg: "friend doesn't exist", success: false})
 			}
 		})
 	})
@@ -92,7 +92,7 @@ app.post('/requestfriendship/:token/:id', function (req, res) {
 app.get('/pendingrequests/:token', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.getUserRequests(id, function(requests) {
-			res.send({msg: "all pending requests", success: true, info: requests})
+			res.jsonp({msg: "all pending requests", success: true, info: requests})
 		})
 	})
 });
@@ -100,8 +100,8 @@ app.get('/pendingrequests/:token', function (req, res) {
 app.post('/acceptfriend/:token/:requestId', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.resolveRequest(req.params.requestId, true, function (friend) {
-			if (friend !== undefined) res.send({msg: "accepted friend", success: true, user: friend})
-			else res.send({msg: "could not accept friend request", success: false})
+			if (friend !== undefined) res.jsonp({msg: "accepted friend", success: true, user: friend})
+			else res.jsonp({msg: "could not accept friend request", success: false})
 		})
 	})
 });
@@ -109,7 +109,7 @@ app.post('/acceptfriend/:token/:requestId', function (req, res) {
 app.get('/listfriends/:token/', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.getFriendsDisplay(id, function (friends) {
-			res.send({msg: "friend's list", success: true, friends: friends})
+			res.jsonp({msg: "friend's list", success: true, friends: friends})
 		})
 	})
 });
@@ -119,8 +119,8 @@ app.post('/location/:token/:lat/:long/:town/:country', function (req, res) {
 		var town = req.params.town.replace(/%20/g,  ' ')
 		var country = req.params.country.replace(/%20/g,  ' ')
 		db.setFullLocation(id, [req.params.lat, req.params.long], town, country, function (ok) {
-			if (ok) res.send({msg: "updated location", success: true})
-			else res.send({msg: "could not update location", success: false})
+			if (ok) res.jsonp({msg: "updated location", success: true})
+			else res.jsonp({msg: "could not update location", success: false})
 		})
 	})
 });
@@ -128,8 +128,8 @@ app.post('/location/:token/:lat/:long/:town/:country', function (req, res) {
 app.get('/location/:token', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.getUserById(id, function (user) {
-			if (user !== undefined) res.send({msg: "found you!", success: true, user: user})
-			else res.send({msg: "could not find you", success: false})
+			if (user !== undefined) res.jsonp({msg: "found you!", success: true, user: user})
+			else res.jsonp({msg: "could not find you", success: false})
 		})
 	})
 });
