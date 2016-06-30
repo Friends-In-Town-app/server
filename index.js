@@ -12,6 +12,14 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.get('/', function(req, res, next) {
+	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
+});
+
+app.post('/', function(req, res, next) {
+	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
+});
+
 app.get('/checkemailexistence/:email', function (req, res) {
 	db.existsEmail(req.params.email, function (id) {
 		if (id) res.json({msg: "email exists", success: true})
