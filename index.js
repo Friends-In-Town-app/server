@@ -36,7 +36,7 @@ app.post('/createaccountemail/:email/:password/:displayname', function (req, res
 	})
 });
 	
-app.get('/loginemail/:email/:password/:source', function (req, res) {
+app.post('/loginemail/:email/:password/:source', function (req, res) {
 	db.tryLogin(req.params.email, req.params.password, function (id) {
 		if (id !== undefined) {
 			db.setSessionForId(id, req.params.source, function (token) {

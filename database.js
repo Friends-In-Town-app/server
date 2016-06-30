@@ -4,7 +4,6 @@ var assert = require('assert'); // assert module from nodejs default api. will b
 
 
 var Mongodb = function () {
-	this.a = 'lala'
 	this.db
 	this.users
 	this.usersEmailCredentials
