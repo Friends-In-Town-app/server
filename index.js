@@ -95,7 +95,7 @@ app.post('/requestfriendship/:token/:id', function (req, res) {
 app.get('/pendingrequests/:token', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.getUserRequests(id, function(requests) {
-			res.jsonp({msg: "all pending requests", success: true, info: requests})
+			res.jsonp({msg: "all pending requests", success: true, requests: requests})
 		})
 	})
 });
@@ -103,13 +103,13 @@ app.get('/pendingrequests/:token', function (req, res) {
 app.post('/acceptfriend/:token/:requestId', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.resolveRequest(req.params.requestId, true, function (friend) {
-			if (friend !== undefined) res.jsonp({msg: "accepted friend", success: true, user: friend})
+			if (friend !== undefined) res.jsonp({msg: "accepted friend", success: true, friend: friend})
 			else res.jsonp({msg: "could not accept friend request", success: false})
 		})
 	})
 });
 
-app.get('/listfriends/:token/', function (req, res) {
+app.get('/listfriends/:token', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.getFriendsDisplay(id, function (friends) {
 			res.jsonp({msg: "friend's list", success: true, friends: friends})
