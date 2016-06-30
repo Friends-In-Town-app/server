@@ -7,7 +7,7 @@ var app = express();
 app.use(express.static('web'));
 
 app.use(function(req, res, next) {
-	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
+	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl, 'from ip: '+req.ip );
 	// res.header("Access-Control-Allow-Origin", "*");
 	// res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
