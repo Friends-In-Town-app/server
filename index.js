@@ -7,17 +7,10 @@ var app = express();
 app.use(express.static('web'));
 
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
-});
-
-app.get('/', function(req, res, next) {
-	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
-});
-
-app.post('/', function(req, res, next) {
-	console.log(' - a ' + req.method + ' request has arrived:', req.originalUrl);
 });
 
 app.get('/checkemailexistence/:email', function (req, res) {
