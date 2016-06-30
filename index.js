@@ -43,15 +43,18 @@ app.post('/logout/:token', function (req, res) {
 });
 
 var getUserIdByToken = function (res, token, callback) {
-	db.getUserIdByToken(token, function (id) {
-		if (id !== undefined) {
-			callback(id)
-		} else {
-			res.jsonp({msg: "token does not exist", success: false, token: token})	
-		}
-	})
+	if (token.length === 24 && /^[0-9a-fA-F]{24}$/.test(token)) {
+		db.getUserIdByToken(token, function (id) {
+			if (id !== undefined) {
+				callback(id)
+			} else {
+				res.jsonp({msg: "token does not exist", success: false, token: token})	
+			}
+		})
+	} else {
+		res.jsonp({msg: "token does not have 24 hexadecimal characters", success: false, token: token})	
+	}
 }
-
 
 app.post('/changename/:token/:displayname', function (req, res) {
 	if (req.params.displayname.length > 0) {
