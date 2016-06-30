@@ -23,7 +23,7 @@ app.post('/createaccountemail/:email/:password/:displayname', function (req, res
 app.get('/loginemail/:email/:password/:source', function (req, res) {
 	db.tryLogin(req.params.email, req.params.password, function (id) {
 		if (id !== undefined) {
-			db.createSessionForId(id, req.params.source, function (token) {
+			db.setSessionForId(id, req.params.source, function (token) {
 				db.getUserById(id, function (user) {
 					if (user !== undefined) res.jsonp({msg: "login successful", success: true, user: user, token: token})
 					else res.jsonp({msg: "user credentials exist but user data doesn't exist", success: false})

@@ -75,16 +75,23 @@ Mongodb.prototype.tryLogin = function (email, password, callback) {
 	})
 };
 
+Mongodb.prototype.setSessionForId = function (id, source, callback) {
+	var self = this
+	self.usersSessions.findOne({uid: id, s: source}, {_id: 1}, function (err, doc) {
+		if (doc) {
+			self.usersSessions.remove({_id: doc._id}, function (err, result) {
+				self.createSessionForId(id, source, callback)
+			})
+		} else {
+			self.createSessionForId(id, source, callback)
+		}
+	})
+};
+
 Mongodb.prototype.createSessionForId = function (id, source, callback) {
 	var self = this
-	self.usersSessions.find({uid: id, s: source}, {_id: 1}).limit(1).toArray(function (err, docs) {
-		if (docs.length === 1)
-			callback(docs[0]._id)
-		else {
-			self.usersSessions.insertOne({uid: id, s: source, d: new Date()}, function (err, result) {
-				callback(result.ops[0]._id) // token is MongoDB ObjectID from sessions collection.
-			})
-		}
+	self.usersSessions.insertOne({uid: id, s: source, d: new Date()}, function (err, result) {
+		callback(result.ops[0]._id) // token is MongoDB ObjectID from sessions collection.
 	})
 };
 
