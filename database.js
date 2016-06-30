@@ -135,7 +135,10 @@ Mongodb.prototype.getUserDisplayByEmail = function (email, callback) {
 	self.usersEmailCredentials.findOne({email: email}, {_id: 1}, function (err, doc) {
 		if (doc) {
 			self.users.findOne({_id: doc._id}, {_id: 1, n: 1, ct: 1}, function (err, doc) {
-				if (doc) callback(doc)
+				if (doc) {
+					doc.email = email
+					callback(doc)
+				}
 				else callback()
 			})
 		} else {
