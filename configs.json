@@ -1,0 +1,9 @@
+{
+	"database": {
+		"domainAndPort": "localhost:27017",
+		"databaseName": "FriendsInTown"
+	},
+	"server": {
+		"port": 3000
+	}
+}

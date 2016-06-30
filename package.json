@@ -1,0 +1,33 @@
+{
+  "name": "friends-in-town-server",
+  "version": "1.0.0",
+  "description": "backend server for friends in town app",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.13.4",
+    "moment-timezone": "^0.5.4",
+    "mongodb": "^2.1.18"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Friends-In-Town-app/server"
+  },
+  "keywords": [
+    "friends",
+    "in",
+    "town",
+    "server",
+    "backend",
+    "nodejs"
+  ],
+  "author": "Cássio Holanda Gonçalves",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Friends-In-Town-app/server/issues"
+  },
+  "homepage": "https://github.com/Friends-In-Town-app/server"
+}
