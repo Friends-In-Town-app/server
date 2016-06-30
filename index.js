@@ -16,7 +16,7 @@ app.get('/checkemailexistence/:email', function (req, res) {
 app.post('/createaccountemail/:email/:password/:displayname', function (req, res) {
 	db.createAccountWithEmail(req.params.email, req.params.password, req.params.displayname, function (id) {
 		if (id !== undefined) res.jsonp({msg: "account created", success: true})
-		else res.jsonp({msg: "email already exists", success: false, info: req.email})
+		else res.jsonp({msg: "email already exists", success: false, email: req.params.email})
 	})
 });
 	
@@ -65,23 +65,23 @@ app.post('/changename/:token/:displayname', function (req, res) {
 			})
 		})
 	} else {
-		res.jsonp({msg: "bad display name", success: false})	
+		res.jsonp({msg: "bad display name", success: false})
 	}
 	
 });
 
-app.get('/search/:email/', function (req, res) {
+app.get('/search/:email', function (req, res) {
 	db.getUserDisplayByEmail(req.params.email, function (user) {
 		if (user !== undefined) res.jsonp({msg: "found user", success: true, user: user})
 		else res.jsonp({msg: "no user found", success: false})
 	})
 });
 
-app.post('/requestfriendship/:token/:id', function (req, res) {
+app.post('/requestfriendship/:token/:friendid', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		db.existsUserId(req.params.id, function (friendId) {
-			if (friendId !== undefined) {
-				db.requestFriendship(id, friendId, function (ok) {
+		db.existsUserId(req.params.friendid, function (ok) {
+			if (ok) {
+				db.requestFriendship(id, req.paramsfriendId, function (ok) {
 					if (ok) res.jsonp({msg: "friendship requested", success: true})
 					else res.jsonp({msg: "for some reason we couldn't request friendship", success: false})
 				})

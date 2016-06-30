@@ -62,8 +62,8 @@ Mongodb.prototype.createAccountWithEmail = function (email, password, displayNam
 Mongodb.prototype.existsUserId = function (id, callback) {
 	var self = this
 	self.users.find({_id: ObjectId(id)}, {_id: 1}).limit(1).toArray(function (err, docs) {
-		if (docs.length === 1) callback(docs[0]._id)
-		else callback()
+		if (docs.length === 1) callback(true)
+		else callback(false)
 	})
 }
 
