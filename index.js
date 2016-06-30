@@ -8,7 +8,7 @@ app.use(express.static('web'));
 
 app.get('/checkemailexistence/:email', function (req, res) {
 	db.existsEmail(req.params.email, function (id) {
-		if (ok) res.json({msg: "email exists", success: true})
+		if (id) res.json({msg: "email exists", success: true})
 		else res.json({msg: "email does not exists", success: false})
 	})
 });
