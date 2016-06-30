@@ -27,3 +27,10 @@ This server will be a nodejs application using expressjs library. It will have a
 * Get last town update time.
 
 *more functionalities could be added later.*
+
+<br>
+<h3>To make it work</h3>
+
+* <code>cd path/to/project</code>
+* issue <code>npm install</code>
+* issue <code>node index.js</code>
