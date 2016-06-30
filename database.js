@@ -132,11 +132,10 @@ Mongodb.prototype.getUserDisplayById = function (id, callback) {
 
 Mongodb.prototype.getUserDisplayByEmail = function (email, callback) {
 	var self = this
-	self.usersEmailCredentials.find({email: email}, {_id: 1}).limit(1).toArray(function (err, docs) {
-		if (docs.length === 1) {
-			self.users.find({_id: docs[0]._id}, {_id: 1, n: 1, pos: 1, city: 1, ct: 1})
-			.limit(1).toArray(function (err, docs) {
-				if (docs.length === 1) callback(docs[0])
+	self.usersEmailCredentials.findOne({email: email}, {_id: 1}, function (err, doc) {
+		if (doc) {
+			self.users.findOne({_id: doc._id}, {_id: 1, n: 1, ct: 1}, function (err, doc) {
+				if (doc) callback(doc)
 				else callback()
 			})
 		} else {
