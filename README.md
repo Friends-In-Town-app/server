@@ -27,9 +27,15 @@ Create an account with email, password and display name.
 
     method: POST
     path: createaccountemail/<email>/<password>/<displayname>
-    successful return: {msg: "account created", success: true}
-    unsuccessful return: {msg: "email already exists", success: false, email: req.params.email}
+    successful return: {msg: "account deleted", success: true}
+    unsuccessful return: {msg: "email already exists", success: false, email: email}
 
+Delete an account with email and password.
+
+    method: POST
+    path: deleteccountemail/<email>/<password>
+    successful return: {msg: "account created", success: true}
+    unsuccessful return: {msg: "email and password do not match", success: false}
 
 Log user in
 

@@ -35,6 +35,13 @@ app.post('/createaccountemail/:email/:password/:displayname', function (req, res
 		else res.jsonp({msg: "email already exists", success: false, email: req.params.email})
 	})
 });
+
+app.post('/deleteaccountemail/:email/:password/', function (req, res) {
+	db.deleteAccountWithEmail(req.params.email, req.params.password, function (ok) {
+		if (ok) res.jsonp({msg: "account deleted", success: true})
+		else res.jsonp({msg: "email and password do not match", success: false})
+	})
+});
 	
 app.post('/loginemail/:email/:password/:source', function (req, res) {
 	db.tryLogin(req.params.email, req.params.password, function (id) {

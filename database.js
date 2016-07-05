@@ -58,6 +58,27 @@ Mongodb.prototype.createAccountWithEmail = function (email, password, displayNam
 	})
 };
 
+Mongodb.prototype.deleteAccountWithEmail = function (email, password, callback) {
+	var self = this
+	self.tryLogin(email, password, function (id) {
+		if (id !== undefined) {
+			var asyncCounter = 4
+			var waitAllAsyncCalls = function (err, r) { if (--asyncCounter === 0) callback(true) }
+			self.friendShip.bulkWrite([{deleteMany: {filter: {"id.f": id}}}, 
+			                           {deleteMany: {filter: {"_id.t": id}}}], 
+			{ordered: false}, waitAllAsyncCalls)
+			self.usersSessions.deleteMany({uid: id}, waitAllAsyncCalls)
+			self.usersEmailCredentials.deleteMany({_id: id}, waitAllAsyncCalls)
+			self.users.deleteMany({_id: id}, waitAllAsyncCalls)
+			self.usersRequests.bulkWrite([{deleteMany: {filter: {f: id}}}, 
+			                              {deleteMany: {filter: {t: id}}}], 
+			{ordered: false}, waitAllAsyncCalls)
+		} else {
+			callback()
+		}
+	})
+};
+
 Mongodb.prototype.existsUserId = function (id, callback) {
 	var self = this
 	self.users.find({_id: ObjectId(id)}, {_id: 1}).limit(1).toArray(function (err, docs) {
