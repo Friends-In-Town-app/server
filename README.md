@@ -30,12 +30,12 @@ Create an account with email, password and display name.
     successful return: {msg: "account deleted", success: true}
     unsuccessful return: {msg: "email already exists", success: false, email: email}
 
-Delete an account with email and password.
+Delete an account.
 
     method: POST
-    path: deleteccountemail/<email>/<password>
+    path: deleteccount/<token>/<password>
     successful return: {msg: "account created", success: true}
-    unsuccessful return: {msg: "email and password do not match", success: false}
+    unsuccessful return: {msg: "password do not match", success: false}
 
 Log user in
 

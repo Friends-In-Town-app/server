@@ -35,13 +35,6 @@ app.post('/createaccountemail/:email/:password/:displayname', function (req, res
 		else res.jsonp({msg: "email already exists", success: false, email: req.params.email})
 	})
 });
-
-app.post('/deleteaccountemail/:email/:password/', function (req, res) {
-	db.deleteAccountWithEmail(req.params.email, req.params.password, function (ok) {
-		if (ok) res.jsonp({msg: "account deleted", success: true})
-		else res.jsonp({msg: "email and password do not match", success: false})
-	})
-});
 	
 app.post('/loginemail/:email/:password/:source', function (req, res) {
 	db.tryLogin(req.params.email, req.params.password, function (id) {
@@ -79,6 +72,19 @@ var getUserIdByToken = function (res, token, callback) {
 	}
 }
 
+
+app.post('/deleteaccount/:token/:password', function (req, res) {
+	getUserIdByToken(res, req.params.token, function (id) {
+		db.deleteAccount(id, req.params.password, function (ok) {
+			if (ok !== undefined){
+				if (ok) res.jsonp({msg: "account deleted", success: true})
+				else res.jsonp({msg: "password do not match", success: false})
+			} else
+				res.jsonp({msg: "session exists but id does not exist in user credentials", success: false})
+		})
+	})
+});
+
 app.post('/changename/:token/:displayname', function (req, res) {
 	if (req.params.displayname.length > 0) {
 		getUserIdByToken(res, req.params.token, function (id) {
@@ -104,7 +110,7 @@ app.post('/requestfriendship/:token/:friendid', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		db.existsUserId(req.params.friendid, function (ok) {
 			if (ok) {
-				db.requestFriendship(id, req.paramsfriendId, function (ok) {
+				db.requestFriendship(id, req.params.friendid, function (ok) {
 					if (ok) res.jsonp({msg: "friendship requested", success: true})
 					else res.jsonp({msg: "for some reason we couldn't request friendship", success: false})
 				})
@@ -125,7 +131,7 @@ app.get('/pendingrequests/:token', function (req, res) {
 
 app.post('/acceptfriend/:token/:requestId', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		db.resolveRequest(req.params.requestId, true, function (friend) {
+		db.resolveRequest(id, req.params.requestId, true, function (friend) {
 			if (friend !== undefined) res.jsonp({msg: "accepted friend", success: true, friend: friend})
 			else res.jsonp({msg: "could not accept friend request", success: false})
 		})

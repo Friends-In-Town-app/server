@@ -58,21 +58,25 @@ Mongodb.prototype.createAccountWithEmail = function (email, password, displayNam
 	})
 };
 
-Mongodb.prototype.deleteAccountWithEmail = function (email, password, callback) {
+Mongodb.prototype.deleteAccount = function (id, password, callback) {
 	var self = this
-	self.tryLogin(email, password, function (id) {
-		if (id !== undefined) {
-			var asyncCounter = 4
-			var waitAllAsyncCalls = function (err, r) { if (--asyncCounter === 0) callback(true) }
-			self.friendShip.bulkWrite([{deleteMany: {filter: {"id.f": id}}}, 
-			                           {deleteMany: {filter: {"_id.t": id}}}], 
-			{ordered: false}, waitAllAsyncCalls)
-			self.usersSessions.deleteMany({uid: id}, waitAllAsyncCalls)
-			self.usersEmailCredentials.deleteMany({_id: id}, waitAllAsyncCalls)
-			self.users.deleteMany({_id: id}, waitAllAsyncCalls)
-			self.usersRequests.bulkWrite([{deleteMany: {filter: {f: id}}}, 
-			                              {deleteMany: {filter: {t: id}}}], 
-			{ordered: false}, waitAllAsyncCalls)
+	self.usersEmailCredentials.find({_id: id}, {pw: 1}).limit(1).toArray(function (err, docs) {
+		if (docs.length === 1) {
+			if (docs[0].pw === password) {
+				var asyncCounter = 4
+				var waitAllAsyncCalls = function (err, r) { if (--asyncCounter === 0) callback(true) }
+				self.friendShip.bulkWrite([{deleteMany: {filter: {"_id.f": id}}}, 
+				                           {deleteMany: {filter: {"_id.t": id}}}], 
+				{ordered: false}, waitAllAsyncCalls)
+				self.usersSessions.deleteMany({uid: id}, waitAllAsyncCalls)
+				self.usersEmailCredentials.deleteMany({_id: id}, waitAllAsyncCalls)
+				self.users.deleteMany({_id: id}, waitAllAsyncCalls)
+				self.usersRequests.bulkWrite([{deleteMany: {filter: {f: id}}}, 
+				                              {deleteMany: {filter: {t: id}}}], 
+				{ordered: false}, waitAllAsyncCalls)
+			} else {
+				callback(false)
+			}
 		} else {
 			callback()
 		}
@@ -177,6 +181,7 @@ Mongodb.prototype.changeDisplayName = function (id, displayName, callback) {
 
 Mongodb.prototype.requestFriendship = function (id, friendId, callback) {
 	var self = this
+	friendId = ObjectId(friendId)
 	self.users.find({_id: friendId}, {_id: 1}).toArray(function (err, docs) {
 		if (docs.length === 1) {
 			friendIsRequestedByUser = {f: friendId, t: id, type: 'friendship', hide: false, d: new Date()}
@@ -213,25 +218,26 @@ Mongodb.prototype.getUserRequests = function (id, callback) {
 	})
 };
 
-Mongodb.prototype.resolveRequest = function (requestId, solution, callback) {
+Mongodb.prototype.resolveRequest = function (id, requestId, solution, callback) {
 	var self = this
 	self.usersRequests.findOne({_id: ObjectId(requestId)}, function (err, request) {
-		console.log(request)
 		if (request) {
-			self.usersRequests.remove({_id: request._id}, function (err, r) {
-				if (r.result.n > 0) {	
-					if (request.type === 'friendship') {
-						if (solution === true) {
-							self.addFriendById(request.f, request.t, function (friend) {
-								if (friend) callback(friend)
-								else callback()
-							})
-						} else {
-							callback(false)
+			if (request.f === id) {
+				self.usersRequests.remove({_id: request._id}, function (err, r) {
+					if (r.result.n > 0) {	
+						if (request.type === 'friendship') {
+							if (solution === true) {
+								self.addFriendById(request.f, request.t, function (friend) {
+									if (friend) callback(friend)
+									else callback()
+								})
+							} else {
+								callback(false)
+							}
 						}
 					}
-				}
-			})
+				})
+			}
 		} else {
 			callback()
 		}
