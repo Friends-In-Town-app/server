@@ -7,7 +7,7 @@ var app = express();
 app.use(express.static('web'));
 
 app.use(function(req, res, next) {
-	console.log((new Date()) + ' - a ' + req.method + ' request has arrived:', req.originalUrl, 'from ip: '+req.ip );
+	console.log((new Date()).toLocaleString() + ' - a ' + req.method + ' request has arrived:', req.originalUrl, 'from ip: '+req.ip );
 	// res.header("Access-Control-Allow-Origin", "*");
 	// res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
@@ -175,5 +175,5 @@ db.connect(domainAndPort, databaseName, function () {
 })
 var port = configs.server.port
 app.listen(port, function () {
-	console.log('-- Example app listening on port '+port+'!');
+	console.log((new Date()).toLocaleString() + ' -- Example app listening on port '+port+'!');
 });
