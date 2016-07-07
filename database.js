@@ -237,6 +237,8 @@ Mongodb.prototype.resolveRequest = function (id, requestId, solution, callback) 
 						}
 					}
 				})
+			} else {
+				callback()
 			}
 		} else {
 			callback()
