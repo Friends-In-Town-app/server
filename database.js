@@ -122,11 +122,8 @@ Mongodb.prototype.createSessionForId = function (id, source, callback) {
 Mongodb.prototype.getUserIdByToken = function (token, callback) {
 	var self = this
 	self.usersSessions.find({_id: ObjectId(token)}, {uid: 1}).limit(1).toArray(function (err, docs) {
-		if (docs.length === 1)
-			callback(docs[0].uid)
-		else {
-			callback()
-		}
+		if (docs.length === 1) callback(docs[0].uid)
+		else callback()
 	})
 };
 
@@ -222,7 +219,7 @@ Mongodb.prototype.resolveRequest = function (id, requestId, solution, callback) 
 	var self = this
 	self.usersRequests.findOne({_id: ObjectId(requestId)}, function (err, request) {
 		if (request) {
-			if (request.f === id) {
+			if ( request.f.equals(id) ) {
 				self.usersRequests.remove({_id: request._id}, function (err, r) {
 					if (r.result.n > 0) {	
 						if (request.type === 'friendship') {
