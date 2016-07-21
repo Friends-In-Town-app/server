@@ -146,11 +146,10 @@ app.get('/listfriends/:token', function (req, res) {
 	})
 });
 
-app.post('/location/:token/:lat/:long/:town/:country', function (req, res) {
+app.post('/location/:token/:lat/:long/:address/', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		var town = req.params.town.replace(/%20/g,  ' ')
-		var country = req.params.country.replace(/%20/g,  ' ')
-		db.setFullLocation(id, [req.params.lat, req.params.long], town, country, function (ok) {
+		var address = req.params.address.replace(/%20/g,  ' ')
+		db.setFullLocation(id, [req.params.lat, req.params.long], address, function (ok) {
 			if (ok) res.jsonp({msg: "updated location", success: true})
 			else res.jsonp({msg: "could not update location", success: false})
 		})

@@ -43,7 +43,7 @@ Mongodb.prototype.createAccountWithEmail = function (email, password, displayNam
 		if (exists) {
 			callback()
 		} else {
-			var user = {ct: undefined, city: undefined, pos: undefined, vis: true, n: displayName}
+			var user = {add: undefined, pos: undefined, vis: true, n: displayName}
 			self.users.insertOne(user, function (err, result) {
 				var newUserId = result.ops[0]._id
 				var userCredentials = {_id: newUserId, email: email, pw: password}
@@ -146,7 +146,7 @@ Mongodb.prototype.getUserById = function (id, callback) {
 
 Mongodb.prototype.getUserDisplayById = function (id, callback) {
 	var self = this
-	self.users.findOne({_id: id}, {_id: 1, n: 1, pos: 1, city: 1, ct: 1}, function (err, doc) {
+	self.users.findOne({_id: id}, {_id: 1, n: 1, pos: 1, add: 1}, function (err, doc) {
 		callback(doc)
 	})
 };
@@ -155,7 +155,7 @@ Mongodb.prototype.getUserDisplayByEmail = function (email, callback) {
 	var self = this
 	self.usersEmailCredentials.findOne({email: email}, {_id: 1}, function (err, doc) {
 		if (doc) {
-			self.users.findOne({_id: doc._id}, {_id: 1, n: 1, ct: 1}, function (err, doc) {
+			self.users.findOne({_id: doc._id}, {_id: 1, n: 1, add: 1}, function (err, doc) {
 				if (doc) {
 					doc.email = email
 					callback(doc)
@@ -276,9 +276,9 @@ Mongodb.prototype.getFriendsDisplay = function (id, callback) {
 };
 
 
-Mongodb.prototype.setFullLocation = function (id, position, city, country, callback) {
+Mongodb.prototype.setFullLocation = function (id, position, address, callback) {
 	var self = this
-	self.users.updateOne({_id: id}, {$set: {pos: position, city: city, ct: country}}, function (err, result) {
+	self.users.updateOne({_id: id}, {$set: {pos: position, add: address}}, function (err, result) {
 		if (err) callback(false)
 		else callback (true)
 	})
