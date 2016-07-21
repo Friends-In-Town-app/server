@@ -93,14 +93,14 @@ Accept friend request
     path: /listfriends/<token>
     return: {msg: "friend's list", success: true, friends: friends}
 
-Update current position, town and country
+Update current position and address.
 
     method: POST
-    path: /location/<token>/<lat>/<long>/<town>/<country>
+    path: /location/<token>/<lat>/<long>/<address>
     successful return: {msg: "updated location", success: true}
     unsuccessful return: {msg: "could not update location", success: false}
 
-Get current position, town, country, name, visibility.
+Get current position, address, name, visibility.
 
     method: POST
     path: /location/<token>
