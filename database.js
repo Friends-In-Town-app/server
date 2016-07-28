@@ -32,26 +32,22 @@ Mongodb.prototype.connect = function (domainAndPort, databaseName, callback) {
 Mongodb.prototype.existsEmail = function (email, callback) {
 	var self = this
 	self.usersEmailCredentials.find({email: email}, {_id: 0, email: email}).limit(1).toArray(function (err, docs) {
-		if (docs.length === 1) callback(true)
-		else callback(false)
+		if (docs.length === 1) callback("email already exists", true)
+		else callback("email does not exists", false)
 	})
 }
 
 Mongodb.prototype.createAccountWithEmail = function (email, password, displayName, callback) {
 	var self = this
-	self.existsEmail(email, function (exists) {
-		if (exists) {
-			callback()
-		} else {
+	self.existsEmail(email, function (msg, success) {
+		if (success) callback(msg, false)
+		else {
 			var user = {add: undefined, pos: undefined, vis: true, n: displayName}
 			self.users.insertOne(user, function (err, result) {
 				var newUserId = result.ops[0]._id
 				var userCredentials = {_id: newUserId, email: email, pw: password}
 				self.usersEmailCredentials.insertOne(userCredentials, function (err, result) {
-					if (err)
-						callback()
-					else
-						callback(newUserId)
+					if (result.ops[0]) callback("account created", true)
 				})
 			})
 		}
@@ -63,22 +59,22 @@ Mongodb.prototype.deleteAccount = function (id, password, callback) {
 	self.usersEmailCredentials.find({_id: id}, {pw: 1}).limit(1).toArray(function (err, docs) {
 		if (docs.length === 1) {
 			if (docs[0].pw === password) {
-				var asyncCounter = 4
-				var waitAllAsyncCalls = function (err, r) { if (--asyncCounter === 0) callback(true) }
+				var asyncCounter = 5
+				var waitAllAsyncCalls = function (err, r) { if (--asyncCounter === 0) callback("account deleted", true) }
 				self.friendShip.bulkWrite([{deleteMany: {filter: {"_id.f": id}}}, 
 				                           {deleteMany: {filter: {"_id.t": id}}}], 
-				{ordered: false}, waitAllAsyncCalls)
+				                          {ordered: false}, waitAllAsyncCalls)
+				self.usersRequests.bulkWrite([{deleteMany: {filter: {f: id}}}, 
+				                              {deleteMany: {filter: {t: id}}}], 
+				                             {ordered: false}, waitAllAsyncCalls)
 				self.usersSessions.deleteMany({uid: id}, waitAllAsyncCalls)
 				self.usersEmailCredentials.deleteMany({_id: id}, waitAllAsyncCalls)
 				self.users.deleteMany({_id: id}, waitAllAsyncCalls)
-				self.usersRequests.bulkWrite([{deleteMany: {filter: {f: id}}}, 
-				                              {deleteMany: {filter: {t: id}}}], 
-				{ordered: false}, waitAllAsyncCalls)
 			} else {
-				callback(false)
+				callback("password do not match", false)
 			}
 		} else {
-			callback()
+			callback("session exists but id does not exist for any user", false)
 		}
 	})
 };
@@ -86,8 +82,8 @@ Mongodb.prototype.deleteAccount = function (id, password, callback) {
 Mongodb.prototype.existsUserId = function (id, callback) {
 	var self = this
 	self.users.find({_id: ObjectId(id)}, {_id: 1}).limit(1).toArray(function (err, docs) {
-		if (docs.length === 1) callback(true)
-		else callback(false)
+		if (docs.length === 1) callback('found them', true)
+		else callback('user does not exist', false)
 	})
 }
 
@@ -130,9 +126,10 @@ Mongodb.prototype.getUserIdByToken = function (token, callback) {
 
 Mongodb.prototype.deleteSessionForToken = function (token, callback) {
 	var self = this
-	self.usersSessions.remove({uid: ObjectId(token)}, function (err, r) {
-		if (r.result.n > 0) callback(true)
-		else callback(false)
+	self.usersSessions.remove({_id: ObjectId(token)}, function (err, r) {
+		console.log()
+		if (r.result.n > 0) callback("logout successful", true)
+		else callback("already out", false)
 	})
 };
 
@@ -158,12 +155,12 @@ Mongodb.prototype.getUserDisplayByEmail = function (email, callback) {
 			self.users.findOne({_id: doc._id}, {_id: 1, n: 1, add: 1}, function (err, doc) {
 				if (doc) {
 					doc.email = email
-					callback(doc)
+					callback("found user", true, doc)
 				}
-				else callback()
+				else callback("users has an account with us but we could not find their information", false)
 			})
 		} else {
-			callback()
+			callback("no user found", false)
 		}
 	})
 };
@@ -171,24 +168,25 @@ Mongodb.prototype.getUserDisplayByEmail = function (email, callback) {
 Mongodb.prototype.changeDisplayName = function (id, displayName, callback) {
 	var self = this
 	self.users.updateOne({_id: id}, {$set: {n: displayName}}, function (err, result) {
-		if (err) callback(false)
-		else callback (true)
+		if (err) callback("something bad happened, try again", false)
+		else callback ("changed display name", true)
 	})
 };
 
 Mongodb.prototype.requestFriendship = function (id, friendId, callback) {
 	var self = this
 	friendId = ObjectId(friendId)
+	var errMsg = "for some reason we couldn't request friendship"
 	self.friendShip.findOne({"_id.f": id, "_id.t": friendId}, function (err, friendship) {
-		if (err) callback(false)
+		if (err) callback(errMsg, false)
 		else {
-			if (friendship) callback(false) // they are already friends.
+			if (friendship) callback('You are both already friends', false) // they are already friends.
 			else {
 				var friendIsRequestedByUser = {f: friendId, t: id, type: 'friendship', hide: false, d: new Date()}
 				var query = {f: friendIsRequestedByUser.f, t: friendIsRequestedByUser.t, type: friendIsRequestedByUser.type}
 				self.usersRequests.update(query, friendIsRequestedByUser, {upsert: true}, function (err, result) {
-					if (err) callback(false)
-					else callback(true)
+					if (err) callback(errMsg, false)
+					else callback("friendship requested", true)
 				})
 			}
 		}
@@ -220,6 +218,7 @@ Mongodb.prototype.getUserRequests = function (id, callback) {
 
 Mongodb.prototype.resolveRequest = function (id, requestId, solution, callback) {
 	var self = this
+	var errMsg = "could not accept friend request"
 	self.usersRequests.findOne({_id: ObjectId(requestId)}, function (err, request) {
 		if (request) {
 			if ( request.f.equals(id) ) {
@@ -231,20 +230,20 @@ Mongodb.prototype.resolveRequest = function (id, requestId, solution, callback) 
 						if (request.type === 'friendship') {
 							if (solution === true) {
 								self.addFriendById(request.f, request.t, function (friend) {
-									if (friend) callback(friend)
-									else callback()
+									if (friend) callback("accepted friend", true, friend)
+									else callback("could not accept friend request", false)
 								})
 							} else {
-								callback(false)
+								callback('change information message later', false)
 							}
 						}
 					}
 				})
 			} else {
-				callback()
+				callback(errMsg, false)
 			}
 		} else {
-			callback()
+			callback(errMsg, false)
 		}
 	})
 };
@@ -254,6 +253,7 @@ Mongodb.prototype.addFriendById = function (id, friendId, callback) {
 	var userFriendsWithFriend = {_id: {f: id, t: friendId}, d: new Date()}
 	var friendFriendsWithUser = {_id: {f: friendId, t: id}, d: new Date()}
 	self.friendShip.insertMany([userFriendsWithFriend, friendFriendsWithUser], function (err, result) {
+		if (err) callback()
 		self.getUserDisplayById(friendId, callback)
 	})
 };
@@ -285,8 +285,8 @@ Mongodb.prototype.getFriendsDisplay = function (id, callback) {
 Mongodb.prototype.setFullLocation = function (id, position, address, callback) {
 	var self = this
 	self.users.updateOne({_id: id}, {$set: {pos: position, add: address}}, function (err, result) {
-		if (err) callback(false)
-		else callback (true)
+		if (err) callback("could not update location", false)
+		else callback ("updated location", true)
 	})
 };
 

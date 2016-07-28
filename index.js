@@ -23,16 +23,14 @@ var allowCrossDomain = function(req, res, next) {
 app.use(allowCrossDomain);
 
 app.get('/checkemailexistence/:email', function (req, res) {
-	db.existsEmail(req.params.email, function (id) {
-		if (id) res.json({msg: "email exists", success: true})
-		else res.json({msg: "email does not exists", success: false})
+	db.existsEmail(req.params.email, function (msg, success) {
+		res.json({msg: msg, success: success})
 	})
 });
 
 app.post('/createaccountemail/:email/:password/:displayname', function (req, res) {
-	db.createAccountWithEmail(req.params.email, req.params.password, req.params.displayname, function (id) {
-		if (id !== undefined) res.jsonp({msg: "account created", success: true})
-		else res.jsonp({msg: "email already exists", success: false, email: req.params.email})
+	db.createAccountWithEmail(req.params.email, req.params.password, req.params.displayname, function (msg, success) {
+		res.jsonp({msg: msg, success: success})
 	})
 });
 	
@@ -52,9 +50,8 @@ app.post('/loginemail/:email/:password/:source', function (req, res) {
 });
 
 app.post('/logout/:token', function (req, res) {
-	db.deleteSessionForToken(req.params.token, function (ok) {
-		if (ok) res.jsonp({msg: "logout successful", success: true})
-		else res.jsonp({msg: "already out", success: false})
+	db.deleteSessionForToken(req.params.token, function (msg, success) {
+		res.jsonp({msg: msg, success: success})
 	})
 });
 
@@ -75,12 +72,8 @@ var getUserIdByToken = function (res, token, callback) {
 
 app.post('/deleteaccount/:token/:password', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		db.deleteAccount(id, req.params.password, function (ok) {
-			if (ok !== undefined){
-				if (ok) res.jsonp({msg: "account deleted", success: true})
-				else res.jsonp({msg: "password do not match", success: false})
-			} else
-				res.jsonp({msg: "session exists but id does not exist in user credentials", success: false})
+		db.deleteAccount(id, req.params.password, function (msg, success) {
+			res.jsonp({msg: msg, success: success})
 		})
 	})
 });
@@ -88,9 +81,8 @@ app.post('/deleteaccount/:token/:password', function (req, res) {
 app.post('/changename/:token/:displayname', function (req, res) {
 	if (req.params.displayname.length > 0) {
 		getUserIdByToken(res, req.params.token, function (id) {
-			db.changeDisplayName(id, req.params.displayname, function (ok) {
-				if (ok) res.jsonp({msg: "changed display name", success: true})	
-				else res.jsonp({msg: "something bad happened, try again.", success: false})	
+			db.changeDisplayName(id, req.params.displayname, function (msg, success) {
+				res.jsonp({msg: msg, success: success})	
 			})
 		})
 	} else {
@@ -100,22 +92,20 @@ app.post('/changename/:token/:displayname', function (req, res) {
 });
 
 app.get('/search/:email', function (req, res) {
-	db.getUserDisplayByEmail(req.params.email, function (user) {
-		if (user !== undefined) res.jsonp({msg: "found user", success: true, user: user})
-		else res.jsonp({msg: "no user found", success: false})
+	db.getUserDisplayByEmail(req.params.email, function (msg, success, user) {
+		res.jsonp({msg: msg, success: success, user: user})
 	})
 });
 
 app.post('/requestfriendship/:token/:friendid', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		db.existsUserId(req.params.friendid, function (ok) {
-			if (ok) {
-				db.requestFriendship(id, req.params.friendid, function (ok) {
-					if (ok) res.jsonp({msg: "friendship requested", success: true})
-					else res.jsonp({msg: "for some reason we couldn't request friendship", success: false})
+		db.existsUserId(req.params.friendid, function (msg, success) {
+			if (success) {
+				db.requestFriendship(id, req.params.friendid, function (msg, success) {
+					res.jsonp({msg: msg, success: success})
 				})
 			} else {
-				res.jsonp({msg: "friend doesn't exist", success: false})
+				res.jsonp({msg: msg, success: success})
 			}
 		})
 	})
@@ -123,7 +113,7 @@ app.post('/requestfriendship/:token/:friendid', function (req, res) {
 
 app.get('/pendingrequests/:token', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		db.getUserRequests(id, function(requests) {
+		db.getUserRequests(id, function (requests) {
 			res.jsonp({msg: "all pending requests", success: true, requests: requests})
 		})
 	})
@@ -131,9 +121,8 @@ app.get('/pendingrequests/:token', function (req, res) {
 
 app.post('/acceptfriend/:token/:requestId', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
-		db.resolveRequest(id, req.params.requestId, true, function (friend) {
-			if (friend !== undefined) res.jsonp({msg: "accepted friend", success: true, friend: friend})
-			else res.jsonp({msg: "could not accept friend request", success: false})
+		db.resolveRequest(id, req.params.requestId, true, function (msg, success, friend) {
+			res.jsonp({msg: msg, success: success, friend: friend})
 		})
 	})
 });
@@ -149,9 +138,8 @@ app.get('/listfriends/:token', function (req, res) {
 app.post('/location/:token/:lat/:long/:address/', function (req, res) {
 	getUserIdByToken(res, req.params.token, function (id) {
 		var address = req.params.address.replace(/%20/g,  ' ')
-		db.setFullLocation(id, [req.params.lat, req.params.long], address, function (ok) {
-			if (ok) res.jsonp({msg: "updated location", success: true})
-			else res.jsonp({msg: "could not update location", success: false})
+		db.setFullLocation(id, [req.params.lat, req.params.long], address, function (msg, success) {
+			res.jsonp({msg: msg, success: success})
 		})
 	})
 });
