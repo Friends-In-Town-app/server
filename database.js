@@ -179,16 +179,18 @@ Mongodb.prototype.changeDisplayName = function (id, displayName, callback) {
 Mongodb.prototype.requestFriendship = function (id, friendId, callback) {
 	var self = this
 	friendId = ObjectId(friendId)
-	self.users.find({_id: friendId}, {_id: 1}).toArray(function (err, docs) {
-		if (docs.length === 1) {
-			var friendIsRequestedByUser = {f: friendId, t: id, type: 'friendship', hide: false, d: new Date()}
-			var query = {f: friendIsRequestedByUser.f, t: friendIsRequestedByUser.t, type: friendIsRequestedByUser.type}
-			self.usersRequests.update(query, friendIsRequestedByUser, {upsert: true}, function (err, result) {
-				if (err) callback(false)
-				else callback(true)
-			})
-		} else {
-			callback(false)
+	self.friendShip.findOne({"_id.f": id, "_id.t": friendId}, function (err, friendship) {
+		if (err) callback(false)
+		else {
+			if (friendship) callback(false) // they are already friends.
+			else {
+				var friendIsRequestedByUser = {f: friendId, t: id, type: 'friendship', hide: false, d: new Date()}
+				var query = {f: friendIsRequestedByUser.f, t: friendIsRequestedByUser.t, type: friendIsRequestedByUser.type}
+				self.usersRequests.update(query, friendIsRequestedByUser, {upsert: true}, function (err, result) {
+					if (err) callback(false)
+					else callback(true)
+				})
+			}
 		}
 	})
 	
