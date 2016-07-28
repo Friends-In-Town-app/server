@@ -181,8 +181,9 @@ Mongodb.prototype.requestFriendship = function (id, friendId, callback) {
 	friendId = ObjectId(friendId)
 	self.users.find({_id: friendId}, {_id: 1}).toArray(function (err, docs) {
 		if (docs.length === 1) {
-			friendIsRequestedByUser = {f: friendId, t: id, type: 'friendship', hide: false, d: new Date()}
-			self.usersRequests.insert(friendIsRequestedByUser, function (err, result) {
+			var friendIsRequestedByUser = {f: friendId, t: id, type: 'friendship', hide: false, d: new Date()}
+			var query = {f: friendIsRequestedByUser.f, t: friendIsRequestedByUser.t, type: friendIsRequestedByUser.type}
+			self.usersRequests.update(query, friendIsRequestedByUser, {upsert: true}, function (err, result) {
 				if (err) callback(false)
 				else callback(true)
 			})
@@ -220,8 +221,11 @@ Mongodb.prototype.resolveRequest = function (id, requestId, solution, callback) 
 	self.usersRequests.findOne({_id: ObjectId(requestId)}, function (err, request) {
 		if (request) {
 			if ( request.f.equals(id) ) {
+				self.usersRequests.remove({f: request.t, t: request.f}, function (err, r) {
+					// also removing inversed request in cases both sides requests each other.
+				})
 				self.usersRequests.remove({_id: request._id}, function (err, r) {
-					if (r.result.n > 0) {	
+					if (r.result.n > 0) {
 						if (request.type === 'friendship') {
 							if (solution === true) {
 								self.addFriendById(request.f, request.t, function (friend) {
